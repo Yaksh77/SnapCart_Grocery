@@ -37,6 +37,7 @@ function Login() {
       console.log(error);
     }
   };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-6 py-10 bg-white relative">
       <motion.h1
@@ -116,7 +117,10 @@ function Login() {
           OR
           <span className="flex-1 h-px bg-gray-200"></span>
         </div>
-        <button className="w-full flex items-center justify-center gap-3 border border-gray-300 hover:bg-gray-50 py-3 rounded-xl text-gray-700 font-medium transition-all duration-200">
+        <button
+          className="w-full flex items-center justify-center gap-3 border border-gray-300 hover:bg-gray-50 py-3 rounded-xl text-gray-700 font-medium transition-all duration-200"
+          onClick={() => signIn("google")}
+        >
           <Image src={googleImage} width={20} height={20} alt="google" />
           Continue With Google
         </button>

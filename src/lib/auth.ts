@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import connectDB from "./db";
 import User from "@/models/user.model";
 import bcrypt from "bcryptjs";
+import Google from "next-auth/providers/google";
 
 const authOptions: NextAuthOptions = {
   providers: [
@@ -26,7 +27,9 @@ const authOptions: NextAuthOptions = {
           if (!user) {
             throw new Error("User does not exist");
           }
-
+          if (!user.password) {
+            throw new Error("Please login with Google");
+          }
           const isPasswordMathced = await bcrypt.compare(
             password,
             user.password
@@ -48,8 +51,28 @@ const authOptions: NextAuthOptions = {
         }
       },
     }),
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    }),
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider == "google") {
+        await connectDB();
+        let dbUser = await User.findOne({ email: user.email });
+        if (!dbUser) {
+          dbUser = await User.create({
+            name: user.name,
+            email: user.email,
+            image: user.image,
+          });
+        }
+        user.id = dbUser._id.toString();
+        user.role = dbUser.role;
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
