@@ -2,7 +2,7 @@
 import axios from "axios";
 import { ArrowRight, Bike, User, UserCog } from "lucide-react";
 import { motion } from "motion/react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 function EditRoleMobile() {

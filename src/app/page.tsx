@@ -19,12 +19,13 @@ export default async function Home() {
   const inComplete =
     !user.mobile || !user.role || (!user.mobile && user.role === "user");
   if (inComplete) {
-    return <EditRoleMobile />;
+    redirect("/complete-profile");
   }
 
+  const plainUser = JSON.parse(JSON.stringify(user));
   return (
     <>
-      <Navbar />
+      <Navbar user={plainUser} />
     </>
   );
 }
