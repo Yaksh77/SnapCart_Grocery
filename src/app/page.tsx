@@ -1,5 +1,8 @@
+import AdminDashboard from "@/components/AdminDashboard";
+import DeliveryBoyDashboard from "@/components/DeliveryBoyDashboard";
 import EditRoleMobile from "@/components/EditRoleMobile";
 import Navbar from "@/components/Navbar";
+import UserDashboard from "@/components/UserDashboard";
 import authOptions from "@/lib/auth";
 import connectDB from "@/lib/db";
 import User from "@/models/user.model";
@@ -26,6 +29,13 @@ export default async function Home() {
   return (
     <>
       <Navbar user={plainUser} />
+      {user.role == "user" ? (
+        <UserDashboard />
+      ) : user.role == "admin" ? (
+        <AdminDashboard />
+      ) : (
+        <DeliveryBoyDashboard />
+      )}
     </>
   );
 }
