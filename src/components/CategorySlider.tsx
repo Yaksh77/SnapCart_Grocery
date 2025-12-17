@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import React, { useEffect, useRef, useState } from "react";
-import { clearInterval } from "timers";
 
 function CategorySlider() {
   const categories = [
@@ -127,12 +126,20 @@ function CategorySlider() {
         scrollRef.current.scrollBy({ left: 300, behavior: "smooth" });
       }
     }, 3000);
-    return () => clearInterval(autoScroll);
+    return () => {
+      clearInterval(autoScroll);
+    };
   }, []);
 
   useEffect(() => {
-    scrollRef.current?.addEventListener("scroll", checkScroll);
-    return () => removeEventListener("scroll", checkScroll);
+    const el = scrollRef.current;
+    if (!el) return;
+
+    el.addEventListener("scroll", checkScroll);
+
+    return () => {
+      el.removeEventListener("scroll", checkScroll);
+    };
   }, []);
 
   return (
