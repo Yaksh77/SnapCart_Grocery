@@ -74,6 +74,7 @@ const DraggableMarker = ({
 function Checkout() {
   const router = useRouter();
   const { userData } = useSelector((state: RootState) => state.user);
+  const { cartData } = useSelector((state: RootState) => state.cart);
   const { subTotal, deliveryFee, finalTotal } = useSelector(
     (state: RootState) => state.cart
   );
@@ -195,6 +196,42 @@ function Checkout() {
         },
         { enableHighAccuracy: true, maximumAge: 0, timeout: 100000 }
       );
+    }
+  };
+
+  const handleCod = async () => {
+    if (!position) {
+      return;
+    }
+
+    try {
+      const response = await axios.post("/api/user/order", {
+        userId: userData?._id,
+        items: cartData.map((item) => ({
+          grocery: item._id,
+          name: item.name,
+          price: item.price,
+          unit: item.unit,
+          quantity: item.quantity,
+          image: item.image,
+        })),
+        totalAmount: finalTotal,
+        address: {
+          fullName: address.fullName,
+          mobile: address.mobile,
+          city: address.city,
+          state: address.state,
+          pincode: address.pincode,
+          latitude: position?.[0],
+          longitude: position?.[1],
+        },
+        paymentMethod,
+      });
+
+      console.log(response.data);
+      router.push("/user/order-success");
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -430,6 +467,14 @@ function Checkout() {
           <motion.button
             whileTap={{ scale: 0.93 }}
             className="w-full mt-6 bg-green-600 text-white py-3 rounded-full hover:bg-green-700 transition-all font-semibold"
+            onClick={() => {
+              if (paymentMethod == "cod") {
+                handleCod();
+              } else {
+                null;
+                // handleOnlineOrder()
+              }
+            }}
           >
             {paymentMethod == "cod" ? "Place Order" : "Pay & Place ORder"}
           </motion.button>
