@@ -9,6 +9,7 @@ import { ArrowLeft, Minus, Plus, ShoppingBasket, Trash } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -17,6 +18,7 @@ function Cart() {
     (state: RootState) => state.cart
   );
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
 
   return (
     <div className="w-[95%] sm:w-[90%] md:w-[80%] mx-auto mt-8 mb-24 relative">
@@ -149,6 +151,7 @@ function Cart() {
             <motion.button
               whileTap={{ scale: 0.95 }}
               className="w-full mt-6 bg-green-600 text-white py-3 rounded-full hover:bg-green-700 transition-all font-semibold text-sm sm:text-base"
+              onClick={() => router.push("/user/checkout")}
             >
               Procced to Checkout
             </motion.button>

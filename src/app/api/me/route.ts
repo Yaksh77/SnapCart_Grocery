@@ -1,9 +1,11 @@
 import authOptions from "@/lib/auth";
+import connectDB from "@/lib/db";
 import User from "@/models/user.model";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
+  connectDB();
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
@@ -21,6 +23,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(user, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ message: "Get me error" }, { status: 500 });
+    return NextResponse.json(
+      { message: `Get me error ${error}` },
+      { status: 500 }
+    );
   }
 }
