@@ -165,8 +165,6 @@ function Checkout() {
             },
           }
         );
-        console.log(response.data);
-
         const addressData = response.data.address;
 
         setAddress((prev) => ({
@@ -218,6 +216,7 @@ function Checkout() {
         totalAmount: finalTotal,
         address: {
           fullName: address.fullName,
+          fullAddress: address.fullAddress,
           mobile: address.mobile,
           city: address.city,
           state: address.state,

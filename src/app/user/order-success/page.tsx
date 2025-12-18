@@ -2,6 +2,7 @@
 import { ArrowRight, CheckCircle, Package } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 const blinkDots = [
@@ -39,6 +40,8 @@ const blinkDots = [
 ];
 
 function OrderSuccess() {
+  const router = useRouter();
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] px-6 text-center bg-linear-to-b from-green-50 to-white">
       <motion.div
@@ -95,7 +98,7 @@ function OrderSuccess() {
         transition={{ duration: 0.4, delay: 1.2 }}
         className="mt-12"
       >
-        <Link href={"/"}>
+        <Link href={"/user/my-orders"}>
           <motion.div
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.9 }}
