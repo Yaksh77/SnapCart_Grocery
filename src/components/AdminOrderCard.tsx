@@ -1,5 +1,5 @@
 "use client";
-import { IOrder } from "@/models/order.model";
+import { IUser } from "@/models/user.model";
 import axios from "axios";
 import {
   ChevronDown,
@@ -10,10 +10,47 @@ import {
   Phone,
   Truck,
   User,
+  UserCheck,
 } from "lucide-react";
+import mongoose from "mongoose";
 import { motion } from "motion/react";
 import Image from "next/image";
 import React, { useState } from "react";
+
+interface IOrder {
+  _id?: mongoose.Types.ObjectId;
+  user: mongoose.Types.ObjectId;
+  items: [
+    {
+      grocery: mongoose.Types.ObjectId;
+      name: string;
+      category: string;
+      price: string;
+      unit: string;
+      image: string;
+      quantity: number;
+    }
+  ];
+  totalAmount: string;
+  paymentMethod: "cod" | "online";
+  address: {
+    fullName: string;
+    city: string;
+    state: string;
+    pincode: string;
+    fullAddress: string;
+    mobile: string;
+    latitude: number;
+    longitude: number;
+  };
+  status: "pending" | "out of delivery" | "delivered";
+  assignedDeliveryBoy?: IUser;
+  assignment?: mongoose.Types.ObjectId;
+  isPaid?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
 function AdminOrderCard({ order }: { order: IOrder }) {
   const statusOptions = ["pending", "out of delivery"];
   const [status, setStatus] = useState<string>(order.status);
@@ -80,6 +117,35 @@ function AdminOrderCard({ order }: { order: IOrder }) {
                 : "Online Payment"}
             </span>
           </p>
+
+          {order.assignedDeliveryBoy && (
+            <div
+              className="mt-4 bg-blue-50 border
+          border-blue-200 rounded-xl flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3 text-sm p-3 text-gray-700">
+                <UserCheck className="text-blue-600" size={18} />
+                <div className="font-semibold text-gray-800">
+                  <p className="">
+                    Assigned To: {order.assignedDeliveryBoy.name}
+                  </p>
+                  <p className="text-xs text-gray-600 flex">
+                    <Phone size={15} className="mt-1" />
+                    <span className="mt-1">
+                      +91 {order.assignedDeliveryBoy.mobile}
+                    </span>
+                  </p>
+                </div>
+              </div>
+              <a
+                href={`tel:${order.assignedDeliveryBoy.mobile}`}
+                className="bg-blue-600
+              text-white text-xs px-3 py-1.5 mx-3 rounded-lg hover:bg-blue-700 transition"
+              >
+                Call?
+              </a>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col items-start md:items-end gap-2">

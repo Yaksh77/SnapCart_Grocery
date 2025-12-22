@@ -28,6 +28,17 @@ function DeliveryBoyDashboard() {
     return () => socket.off("new-delivery-assignment");
   }, []);
 
+  const handleAccept = async (assignmentId: string) => {
+    try {
+      const response = await axios.get(
+        `/api/delivery/assignment/${assignmentId}/accept-assignment`
+      );
+      console.log(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="w-full min-h-screen bg-gray-50 p-4">
       <div className="max-w-3xl mx-auto">
@@ -47,7 +58,10 @@ function DeliveryBoyDashboard() {
               {assignment?.order?.address?.fullAddress}
             </p>
             <div className="flex gap-3 mt-4">
-              <button className="bg-green-600 text-white px-4 py-2 rounded-lg">
+              <button
+                className="bg-green-600 text-white px-4 py-2 rounded-lg"
+                onClick={() => handleAccept(assignment._id)}
+              >
                 Accept
               </button>
               <button className="bg-red-600 text-white px-4 py-2 rounded-lg">
