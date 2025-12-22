@@ -1,14 +1,11 @@
 "use client";
-import { getSocket } from "@/lib/socket";
-import { RootState } from "@/redux/store";
+
 import { Leaf, ShoppingBasket, ShoppingCart, Truck } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 
 function HeroSection() {
-  const { userData } = useSelector((state: RootState) => state.user);
   const slides = [
     {
       id: 1,
@@ -53,13 +50,6 @@ function HeroSection() {
 
     return () => clearInterval(timer);
   }, []);
-
-  useEffect(() => {
-    if (userData) {
-      let socket = getSocket();
-      socket.emit("identity", userData?._id);
-    }
-  }, [userData]);
 
   return (
     <div className="relative w-[98%] mx-auto mt-32 h-[80vh] rounded-3xl overflow-hidden shadow-2xl">

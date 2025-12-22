@@ -1,5 +1,6 @@
 "use client";
 import { IOrder } from "@/models/order.model";
+import axios from "axios";
 import {
   ChevronDown,
   ChevronUp,
@@ -15,7 +16,23 @@ import Image from "next/image";
 import React, { useState } from "react";
 function AdminOrderCard({ order }: { order: IOrder }) {
   const statusOptions = ["pending", "out of delivery"];
+  const [status, setStatus] = useState<string>(order.status);
   const [expanded, setExpanded] = useState(false);
+
+  const handleStatus = async (orderId: string, status: string) => {
+    try {
+      const response = await axios.post(
+        `/api/admin/update-order-status/${orderId}`,
+        {
+          status,
+        }
+      );
+      setStatus(status);
+      console.log(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <motion.div
@@ -68,16 +85,22 @@ function AdminOrderCard({ order }: { order: IOrder }) {
         <div className="flex flex-col items-start md:items-end gap-2">
           <span
             className={`text-xs font-semibold px-3 py-1 rounded-full capitalize ${
-              order.status == "delivered"
+              status == "delivered"
                 ? "bg-green-100 text-green-700"
-                : order.status == "pending"
+                : status == "pending"
                 ? "bg-yellow-100 text-yellow-700"
                 : "bg-blue-100 text-blue-700"
             }`}
           >
-            {order.status}
+            {status}
           </span>
-          <select className="border border-gray-300 rounded-lg px-3 text-sm shadow-sm hover:border-green-400 transition focus:ring-2 focus:ring-green-500 outline-none">
+          <select
+            className="border border-gray-300 rounded-lg px-3 text-sm shadow-sm hover:border-green-400 transition focus:ring-2 focus:ring-green-500 outline-none"
+            onChange={(e) =>
+              handleStatus(order._id?.toString()!, e.target.value)
+            }
+            value={status}
+          >
             {statusOptions.map((status) => (
               <option key={status} value={status}>
                 {status.toUpperCase()}
@@ -150,7 +173,7 @@ function AdminOrderCard({ order }: { order: IOrder }) {
             Delivery:
             <span className="text-green-700 font-semibold capitalize">
               {" "}
-              {order.status}
+              {status}
             </span>
           </span>
         </div>

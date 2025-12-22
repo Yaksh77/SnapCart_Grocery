@@ -9,9 +9,9 @@ export async function GET(request: NextRequest) {
     await connectDB();
     const session = await getServerSession(authOptions);
 
-    const orders = await Order.find({ user: session?.user.id }).populate(
-      "user"
-    );
+    const orders = await Order.find({ user: session?.user.id })
+      .populate("user")
+      .sort({ createdAt: -1 });
 
     if (!orders) {
       return NextResponse.json(

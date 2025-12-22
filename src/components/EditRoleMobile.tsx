@@ -4,7 +4,7 @@ import { ArrowRight, Bike, User, UserCog } from "lucide-react";
 import { motion } from "motion/react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function EditRoleMobile() {
   const [roles, setRoles] = useState([
@@ -30,6 +30,20 @@ function EditRoleMobile() {
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    const checkForAdmin = async () => {
+      try {
+        const response = await axios.get("/api/check-for-admin");
+        if (response.data.adminExist) {
+          setRoles((prev) => prev.filter((role) => role.id !== "admin"));
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    checkForAdmin();
+  }, []);
 
   return (
     <div className="flex items-center flex-col min-h-screen p-6 w-full bg-white">

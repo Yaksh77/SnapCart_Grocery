@@ -1,6 +1,7 @@
 import AdminDashboard from "@/components/AdminDashboard";
 import DeliveryBoyDashboard from "@/components/DeliveryBoyDashboard";
 import EditRoleMobile from "@/components/EditRoleMobile";
+import GeoUpdater from "@/components/GeoUpdater";
 import Navbar from "@/components/Navbar";
 import UserDashboard from "@/components/UserDashboard";
 import authOptions from "@/lib/auth";
@@ -29,6 +30,7 @@ export default async function Home() {
   return (
     <>
       <Navbar user={plainUser} />
+      <GeoUpdater userId={plainUser._id} />
       {user.role == "user" ? (
         <UserDashboard />
       ) : user.role == "admin" ? (
