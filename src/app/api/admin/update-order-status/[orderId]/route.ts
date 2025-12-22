@@ -1,4 +1,5 @@
 import connectDB from "@/lib/db";
+import emitEventHandler from "@/lib/emitEventHandler";
 import DeliveryAssignment from "@/models/deliveryAssignment.model";
 import Order from "@/models/order.model";
 import User from "@/models/user.model";
@@ -10,6 +11,7 @@ export async function POST(
 ) {
   try {
     await connectDB();
+
     const { orderId } = await params;
     const { status } = await request.json();
 
@@ -19,11 +21,33 @@ export async function POST(
       return NextResponse.json({ message: "Order not found" }, { status: 400 });
     }
 
+    if (status === "pending") {
+      // Remove delivery assignment if exists
+      if (order.assignment) {
+        await DeliveryAssignment.findByIdAndDelete(order.assignment);
+        order.assignment = null;
+      }
+
+      order.status = "pending";
+      await order.save();
+
+      await emitEventHandler("order-status-update", {
+        orderId: order._id,
+        status: order.status,
+      });
+
+      return NextResponse.json(
+        { message: "Order reverted to pending" },
+        { status: 200 }
+      );
+    }
+
     order.status = status;
     let availableDeliveryBoysPayload: any[] = [];
 
-    if (status == "out of delivery" && !order.assignment) {
+    if (status === "out of delivery" && !order.assignment) {
       const { latitude, longitude } = order.address;
+
       const nearByDeliveryBoys = await User.find({
         role: "deliveryBoy",
         location: {
@@ -38,20 +62,26 @@ export async function POST(
       });
 
       const nearByIds = nearByDeliveryBoys.map((boy) => boy._id);
+
       const busyIds = await DeliveryAssignment.find({
         assignedTo: { $in: nearByIds },
         status: { $nin: ["broadcasted", "completed"] },
       }).distinct("assignedTo");
 
-      const busyIdSet = new Set(busyIds.map((b) => String(b)));
+      const busyIdSet = new Set(busyIds.map(String));
+
       const availableDeliveryBoys = nearByDeliveryBoys.filter(
         (b) => !busyIdSet.has(String(b._id))
       );
 
-      const candidates = availableDeliveryBoys.map((boy) => boy._id);
-
-      if (candidates.length == 0) {
+      if (availableDeliveryBoys.length === 0) {
         await order.save();
+
+        await emitEventHandler("order-status-update", {
+          orderId: order._id,
+          status: order.status,
+        });
+
         return NextResponse.json(
           { message: "No delivery boy available" },
           { status: 200 }
@@ -59,12 +89,27 @@ export async function POST(
       }
 
       const deliveryAssignment = await DeliveryAssignment.create({
-        orderId: order._id,
+        order: order._id,
         status: "broadcasted",
-        broadcastedTo: candidates,
+        broadcastedTo: availableDeliveryBoys.map((b) => b._id),
       });
 
+      const populatedAssignment = await DeliveryAssignment.findById(
+        deliveryAssignment._id
+      ).populate("order");
+
+      for (const boy of availableDeliveryBoys) {
+        if (boy.socketId) {
+          await emitEventHandler(
+            "new-delivery-assignment",
+            populatedAssignment,
+            boy.socketId
+          );
+        }
+      }
+
       order.assignment = deliveryAssignment._id;
+
       availableDeliveryBoysPayload = availableDeliveryBoys.map((boy) => ({
         id: boy._id,
         name: boy.name,
@@ -72,16 +117,19 @@ export async function POST(
         latitude: boy.location.coordinates[1],
         longitude: boy.location.coordinates[0],
       }));
-
-      await deliveryAssignment.populate("order");
     }
 
     await order.save();
     await order.populate("user");
 
+    await emitEventHandler("order-status-update", {
+      orderId: order._id,
+      status: order.status,
+    });
+
     return NextResponse.json(
       {
-        assignment: order.assignment._id,
+        assignment: order.assignment || null,
         availableDeliveryBoys: availableDeliveryBoysPayload,
       },
       { status: 200 }

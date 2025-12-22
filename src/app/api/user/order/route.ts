@@ -1,4 +1,5 @@
 import connectDB from "@/lib/db";
+import emitEventHandler from "@/lib/emitEventHandler";
 import Order from "@/models/order.model";
 import User from "@/models/user.model";
 import { NextRequest, NextResponse } from "next/server";
@@ -27,6 +28,8 @@ export async function POST(request: NextRequest) {
       totalAmount,
       address,
     });
+
+    await emitEventHandler("new-order", order);
 
     return NextResponse.json(order, { status: 201 });
   } catch (error) {
