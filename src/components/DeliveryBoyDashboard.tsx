@@ -6,6 +6,8 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import LiveMap from "./LiveMap";
 import DeliveryChat from "./DeliveryChat";
+import { Loader } from "lucide-react";
+import { a } from "motion/react-m";
 
 interface ILocation {
   latitude: number;
@@ -15,6 +17,11 @@ interface ILocation {
 function DeliveryBoyDashboard() {
   const [assignments, setAssingments] = useState<any[]>();
   const [activeOrder, setActiveOrder] = useState<any>(null);
+  const [showOtpBox, setShowOtpBox] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [otpError, setOtpError] = useState("");
+  const [sendOtpLoading, setSendOtpLoading] = useState(false);
+  const [verifyOtpLoading, setVerifyOtpLoading] = useState(false);
   const [userLocation, setUserLocation] = useState<ILocation>({
     latitude: 0,
     longitude: 0,
@@ -28,8 +35,6 @@ function DeliveryBoyDashboard() {
   const fetchAssignments = async () => {
     try {
       const response = await axios.get("/api/delivery/get-assignments");
-      console.log(response.data);
-
       setAssingments(response.data);
     } catch (error) {
       console.log(error);
@@ -41,7 +46,6 @@ function DeliveryBoyDashboard() {
       const response = await axios.get(
         `/api/delivery/assignment/${assignmentId}/accept-assignment`
       );
-      console.log(response.data);
     } catch (error) {
       console.log(error);
     }
@@ -65,7 +69,6 @@ function DeliveryBoyDashboard() {
           longitude: response.data.assignment.order.address.longitude,
         });
       }
-      console.log(response.data);
     } catch (error) {
       console.log(error);
     }
@@ -75,6 +78,18 @@ function DeliveryBoyDashboard() {
     fetchAssignments();
     fetchCurrentOrder();
   }, [userData]);
+
+  useEffect((): any => {
+    const socket = getSocket();
+    socket.on("update-deliveryBoy-location", ({ userId, location }) => {
+      setDeliveryBoyLocation({
+        latitude: location.coordinates[1],
+        longitude: location.coordinates[0],
+      });
+    });
+
+    return () => socket.off("update-deliveryBoy-location");
+  }, []);
 
   useEffect(() => {
     const socket = getSocket();
@@ -107,6 +122,38 @@ function DeliveryBoyDashboard() {
     return () => navigator.geolocation.clearWatch(watchId);
   }, [userData?._id]);
 
+  const sendOtp = async () => {
+    setSendOtpLoading(true);
+    try {
+      let response = await axios.post("/api/delivery/otp/send", {
+        orderId: activeOrder.order._id,
+      });
+      console.log(response.data);
+      setShowOtpBox(true);
+    } catch (error) {
+      setSendOtpLoading(false);
+      console.log(error);
+    }
+  };
+
+  const verifyOtp = async () => {
+    setVerifyOtpLoading(true);
+    try {
+      const response = await axios.post("/api/delivery/otp/verify", {
+        orderId: activeOrder.order._id,
+        otp,
+      });
+      console.log(response.data);
+      setActiveOrder(null);
+      setShowOtpBox(false);
+      setVerifyOtpLoading(false);
+      await fetchCurrentOrder();
+    } catch (error) {
+      setOtpError("Invalid Otp");
+      setVerifyOtpLoading(false);
+    }
+  };
+
   if (activeOrder && userLocation) {
     return (
       <div className="p-4 pt-25 min-h-screen bg-gray-50">
@@ -127,6 +174,49 @@ function DeliveryBoyDashboard() {
             orderId={activeOrder.order._id}
             deliveryBoyId={userData?._id!}
           />
+          <div className="mt-6 bg-white rounded-xl border shadow p-6">
+            {!activeOrder.order.deliveryOtpVeryfication && !showOtpBox && (
+              <button
+                className="bg-green-600 w-full text-center text-white px-4 py-2 rounded-lg"
+                onClick={sendOtp}
+              >
+                {sendOtpLoading ? (
+                  <Loader size={16} className="animate-spin" />
+                ) : (
+                  "Send Otp"
+                )}
+              </button>
+            )}
+
+            {showOtpBox && (
+              <div className="mt-4">
+                <input
+                  type="text"
+                  className="w-full py-3 border rounded-lg text-center"
+                  placeholder="Enter Otp"
+                  maxLength={6}
+                  onChange={(e) => setOtp(e.target.value)}
+                />
+                <button
+                  className="w-full mt-4 bg-blue-600 text-center text-white py-3 rounded-lg"
+                  onClick={verifyOtp}
+                >
+                  {verifyOtpLoading ? (
+                    <Loader size={16} className="animate-spin" />
+                  ) : (
+                    "Verify OTP"
+                  )}
+                  {otpError && <p className="text-red-600 mt-2">{otpError}</p>}
+                </button>
+              </div>
+            )}
+
+            {activeOrder.order.deliveryOtpVeryfication && (
+              <div className="mt-4">
+                <p className="text-green-600 text-center">Order Delivered!</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );

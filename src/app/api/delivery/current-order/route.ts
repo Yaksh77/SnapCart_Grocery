@@ -1,3 +1,4 @@
+import "@/lib/registerModels";
 import authOptions from "@/lib/auth";
 import connectDB from "@/lib/db";
 import DeliveryAssignment from "@/models/deliveryAssignment.model";
@@ -7,21 +8,17 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     await connectDB();
-    const session = await getServerSession(authOptions);
 
+    const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const deliveryBoyId = session.user.id;
     const activeAssignment = await DeliveryAssignment.findOne({
-      assignedTo: deliveryBoyId,
+      assignedTo: session.user.id,
       status: "assigned",
     })
-      .populate({
-        path: "order",
-        populate: { path: "address" },
-      })
+      .populate("order") // address is embedded, so works fine
       .lean();
 
     if (!activeAssignment) {
@@ -33,6 +30,7 @@ export async function GET() {
       { status: 200 }
     );
   } catch (error) {
+    console.error("CURRENT ORDER ERROR:", error);
     return NextResponse.json(
       { message: "Get current order error", error },
       { status: 500 }
