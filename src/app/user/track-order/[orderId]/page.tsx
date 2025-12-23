@@ -5,7 +5,7 @@ import { IMessage } from "@/models/message.model";
 import { IUser } from "@/models/user.model";
 import { RootState } from "@/redux/store";
 import axios from "axios";
-import { ArrowLeft, Send } from "lucide-react";
+import { ArrowLeft, Loader, Send, Sparkle } from "lucide-react";
 import mongoose from "mongoose";
 import { AnimatePresence, motion } from "motion/react";
 import { useParams, useRouter } from "next/navigation";
@@ -65,7 +65,10 @@ function TrackOrder({ params }: { params: { orderId: string } }) {
     longitude: 0,
   });
   const [newMessage, setNewMessage] = useState("");
-  const [messages, setMessages] = useState<IMessage[]>();
+  const [messages, setMessages] = useState<IMessage[]>([]);
+  const chatBoxRef = React.useRef<HTMLDivElement>(null);
+  const [suggestedMessages, setSuggestedMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const getOrder = async () => {
@@ -109,9 +112,7 @@ function TrackOrder({ params }: { params: { orderId: string } }) {
     const socket = getSocket();
     socket.emit("join-room", orderId?.toString());
     socket.on("receive-message", (message: IMessage) => {
-      if (message.roomId.toString() === orderId?.toString()) {
-        setMessages((prevMessages) => [...prevMessages!, message]);
-      }
+      setMessages((prev) => [...prev, message]);
     });
 
     return () => {
@@ -141,6 +142,7 @@ function TrackOrder({ params }: { params: { orderId: string } }) {
         const response = await axios.post(`/api/chat/messages`, {
           roomId: orderId?.toString(),
         });
+
         setMessages(response.data);
       } catch (error) {
         console.log(error);
@@ -149,6 +151,34 @@ function TrackOrder({ params }: { params: { orderId: string } }) {
 
     getAllMessages();
   }, []);
+
+  useEffect(() => {
+    chatBoxRef.current?.scrollTo({
+      top: chatBoxRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [messages]);
+
+  const getSuggestedMessages = async () => {
+    setLoading(true);
+    try {
+      const lastMessage = [...messages]
+        .reverse()
+        .find((m) => m.senderId !== userData?._id);
+
+      if (!lastMessage) return;
+
+      const response = await axios.post(`/api/chat/ai-suggestions`, {
+        message: lastMessage,
+        role: "user",
+      });
+
+      setLoading(false);
+      setSuggestedMessages(response.data.suggestions);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <div className="w-full min-h-screen bg-linear-to-b from-green-50 to-white">
@@ -180,7 +210,40 @@ function TrackOrder({ params }: { params: { orderId: string } }) {
           </div>
 
           <div className="bg-white rounded-3xl shadow-lg border p-4 h-107.5 flex flex-col">
-            <div className="flex-1 overflow-y-auto  p-2 space-y-3">
+            <div className="flex justify-between items-center mb-3">
+              <span className="font-semibold text-gray-700 text-sm">
+                Quick Replies
+              </span>
+              <motion.button
+                className="px-3 py-1 text-xs cursor-pointer flex items-center gap-1 bg-purple-100 text-purple-700 rounded-full shadow-sm border border-purple-200"
+                onClick={getSuggestedMessages}
+              >
+                <Sparkle size={14} />{" "}
+                {loading ? (
+                  <Loader className="animate-spin" size={14} />
+                ) : (
+                  "Get AI Suggestions"
+                )}
+              </motion.button>
+            </div>
+
+            <div className="flex gap-2 flex-wrap mb-3">
+              {suggestedMessages.map((message, index) => (
+                <motion.div
+                  key={index}
+                  whileTap={{ scale: 0.92 }}
+                  className="px-3 py-1 text-xs bg-green-50 cursor-pointer border-green-200 text-green-700 rounded-full"
+                  onClick={() => setNewMessage(message)}
+                >
+                  {message}
+                </motion.div>
+              ))}
+            </div>
+
+            <div
+              className="flex-1 overflow-y-auto  p-2 space-y-3"
+              ref={chatBoxRef}
+            >
               <AnimatePresence>
                 {messages?.map((message, index) => (
                   <motion.div

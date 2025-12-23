@@ -1,7 +1,7 @@
 import { getSocket } from "@/lib/socket";
 import { IMessage } from "@/models/message.model";
 import axios from "axios";
-import { Send } from "lucide-react";
+import { Loader, Send, Sparkle } from "lucide-react";
 import mongoose from "mongoose";
 import { AnimatePresence, motion } from "motion/react";
 import React, { useEffect, useState } from "react";
@@ -14,6 +14,9 @@ type props = {
 function DeliveryChat({ orderId, deliveryBoyId }: props) {
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState<IMessage[]>();
+  const chatBoxRef = React.useRef<HTMLDivElement>(null);
+  const [suggestedMessages, setSuggestedMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect((): any => {
     const socket = getSocket();
@@ -28,6 +31,13 @@ function DeliveryChat({ orderId, deliveryBoyId }: props) {
       socket.off("receive-message");
     };
   }, []);
+
+  useEffect(() => {
+    chatBoxRef.current?.scrollTo({
+      top: chatBoxRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [messages]);
 
   const sendMessage = () => {
     const socket = getSocket();
@@ -60,9 +70,60 @@ function DeliveryChat({ orderId, deliveryBoyId }: props) {
     getAllMessages();
   }, []);
 
+  const getSuggestedMessages = async () => {
+    setLoading(true);
+    try {
+      const lastMessage = [...messages!]
+        .reverse()
+        .find((m) => m.senderId !== deliveryBoyId);
+
+      if (!lastMessage) return;
+
+      const response = await axios.post(`/api/chat/ai-suggestions`, {
+        message: lastMessage,
+        role: "deliveryBoy",
+      });
+
+      setLoading(false);
+      setSuggestedMessages(response.data.suggestions);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="bg-white rounded-3xl shadow-lg border p-4 h-107.5 flex flex-col">
-      <div className="flex-1 overflow-y-auto  p-2 space-y-3">
+      <div className="flex justify-between items-center mb-3">
+        <span className="font-semibold text-gray-700 text-sm">
+          Quick Replies
+        </span>
+        <motion.button
+          className="px-3 py-1 cursor-pointer text-xs flex items-center gap-1 bg-purple-100 text-purple-700 rounded-full shadow-sm border border-purple-200"
+          onClick={getSuggestedMessages}
+        >
+          <Sparkle size={14} />{" "}
+          {loading ? (
+            <Loader size={14} className="animate-spin" />
+          ) : (
+            "Get AI Suggestions"
+          )}
+        </motion.button>
+      </div>
+
+      <div className="flex gap-2 flex-wrap mb-3">
+        {suggestedMessages?.map((message, index) => (
+          <motion.div
+            key={index}
+            whileTap={{ scale: 0.92 }}
+            className="px-3 py-1 text-xs cursor-pointer bg-green-50 border-green-200 text-green-700 rounded-full"
+            onClick={() => setNewMessage(message)}
+          >
+            {message}
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="flex-1 overflow-y-auto  p-2 space-y-3" ref={chatBoxRef}>
         <AnimatePresence>
           {messages?.map((message, index) => (
             <motion.div
