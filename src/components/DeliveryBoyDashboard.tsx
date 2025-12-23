@@ -5,6 +5,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import LiveMap from "./LiveMap";
+import DeliveryChat from "./DeliveryChat";
 
 interface ILocation {
   latitude: number;
@@ -122,6 +123,10 @@ function DeliveryBoyDashboard() {
               deliveryBoyLocation={deliveryBoyLocation}
             />
           </div>
+          <DeliveryChat
+            orderId={activeOrder.order._id}
+            deliveryBoyId={userData?._id!}
+          />
         </div>
       </div>
     );

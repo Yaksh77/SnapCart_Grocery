@@ -8,7 +8,12 @@ export async function GET() {
   try {
     await connectDB();
     const session = await getServerSession(authOptions);
-    const deliveryBoyId = session?.user.id;
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const deliveryBoyId = session.user.id;
     const activeAssignment = await DeliveryAssignment.findOne({
       assignedTo: deliveryBoyId,
       status: "assigned",
@@ -23,11 +28,14 @@ export async function GET() {
       return NextResponse.json({ active: false }, { status: 200 });
     }
 
-    return NextResponse.json({active: true, assignment: activeAssignment }, { status: 200 });
+    return NextResponse.json(
+      { active: true, assignment: activeAssignment },
+      { status: 200 }
+    );
   } catch (error) {
     return NextResponse.json(
-      { message: "Get current order error" },
+      { message: "Get current order error", error },
       { status: 500 }
-    );  
+    );
   }
 }
