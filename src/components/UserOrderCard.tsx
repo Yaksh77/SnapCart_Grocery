@@ -15,6 +15,7 @@ import {
 import mongoose from "mongoose";
 import { motion } from "motion/react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 interface IOrder {
@@ -54,6 +55,7 @@ interface IOrder {
 function UserOrderCard({ order }: { order: IOrder }) {
   const [expanded, setExpanded] = useState(false);
   const [status, setStatus] = useState(order.status);
+  const router = useRouter();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -163,7 +165,10 @@ function UserOrderCard({ order }: { order: IOrder }) {
                   Call?
                 </a>
               </div>
-              <button className="w-full flex items-center justify-center gap-2 bg-green-600 text-white font-semibold px-4 py-2 rounded-xl shadow hover:bg-green-700 transition">
+              <button
+                className="w-full flex items-center justify-center gap-2 bg-green-600 text-white font-semibold px-4 py-2 rounded-xl shadow hover:bg-green-700 transition"
+                onClick={() => router.push(`/user/track-order/${order._id}`)}
+              >
                 <Truck /> Track Your Order
               </button>
             </>
