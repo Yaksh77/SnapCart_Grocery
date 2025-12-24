@@ -106,7 +106,7 @@ function Navbar({ user }: { user: IUser }) {
                 Add Grocery
               </Link>
               <Link
-                href={""}
+                href={"/admin/view-groceries"}
                 className="flex items-center gap-2 bg-white/10 hover:bg-white/15 transition-all shadow-inner text-white font-semibold px-4 py-2 rounded-full "
               >
                 <Box className="w-5 h-5" />
@@ -186,14 +186,14 @@ function Navbar({ user }: { user: IUser }) {
                 Add Grocery
               </Link>
               <Link
-                href={""}
+                href={"/admin/view-groceries"}
                 className="flex items-center gap-2 bg-white text-green-700 font-semibold px-4 py-2 rounded-full hover:bg-green-100 transition-all"
               >
                 <Box className="w-5 h-5" />
                 View Groceries
               </Link>
               <Link
-                href={""}
+                href={"/admin/manage-orders"}
                 className="flex items-center gap-2 bg-white text-green-700 font-semibold px-4 py-2 rounded-full hover:bg-green-100 transition-all"
               >
                 <ClipboardCheck className="w-5 h-5" />
