@@ -101,15 +101,17 @@ function UserOrderCard({ order }: { order: IOrder }) {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span
-            className={`px-3 py-1 text-xs font-semibold rounded-full border ${
-              order.isPaid
-                ? "bg-green-100 text-green-700 border-green-300"
-                : "bg-red-100 text-red-700 border-red-300"
-            }`}
-          >
-            {order.isPaid ? "Paid" : "Unpaid"}
-          </span>
+          {status !== "delivered" && (
+            <span
+              className={`px-3 py-1 text-xs font-semibold rounded-full border ${
+                order.isPaid
+                  ? "bg-green-100 text-green-700 border-green-300"
+                  : "bg-red-100 text-red-700 border-red-300"
+              }`}
+            >
+              {order.isPaid ? "Paid" : "Unpaid"}
+            </span>
+          )}
           <span
             className={`px-3 capitalize py-1 text-xs font-semibold rounded-full border ${getStatusColor(
               status
@@ -119,61 +121,63 @@ function UserOrderCard({ order }: { order: IOrder }) {
           </span>
         </div>
 
-        <div className="p-5 space-y-4 w-full">
-          {order.paymentMethod == "cod" ? (
-            <div className="flex items-center gap-2 text-gray-700 text-sm">
-              <Scooter className="text-green-600" size={16} />
-              Cash On Delivery
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 text-gray-700 text-sm">
-              <CreditCard className="text-green-600" size={16} />
-              Online Payment
-            </div>
-          )}
-
-          <div className="flex items-center gap-2 text-gray-700 text-sm">
-            <MapPin className="text-green-600" size={16} />
-            <span className="truncate">{order.address.fullAddress}</span>
-          </div>
-
-          {order.assignedDeliveryBoy && (
-            <>
-              <div
-                className="mt-4 bg-blue-50 border
-                  border-blue-200 rounded-xl flex items-center justify-between"
-              >
-                <div className="flex items-center gap-3 text-sm p-3 text-gray-700">
-                  <UserCheck className="text-blue-600" size={18} />
-                  <div className="font-semibold text-gray-800">
-                    <p className="">
-                      Assigned To: {order.assignedDeliveryBoy.name}
-                    </p>
-                    <p className="text-xs text-gray-600 flex">
-                      <Phone size={15} className="mt-1" />
-                      <span className="mt-1">
-                        +91 {order.assignedDeliveryBoy.mobile}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-                <a
-                  href={`tel:${order.assignedDeliveryBoy.mobile}`}
-                  className="bg-blue-600
-                      text-white text-xs px-3 py-1.5 mx-3 rounded-lg hover:bg-blue-700 transition"
-                >
-                  Call?
-                </a>
+        {status !== "delivered" && (
+          <div className="p-5 space-y-4 w-full">
+            {order.paymentMethod == "cod" ? (
+              <div className="flex items-center gap-2 text-gray-700 text-sm">
+                <Scooter className="text-green-600" size={16} />
+                Cash On Delivery
               </div>
-              <button
-                className="w-full flex items-center justify-center gap-2 bg-green-600 text-white font-semibold px-4 py-2 rounded-xl shadow hover:bg-green-700 transition"
-                onClick={() => router.push(`/user/track-order/${order._id}`)}
-              >
-                <Truck /> Track Your Order
-              </button>
-            </>
-          )}
-        </div>
+            ) : (
+              <div className="flex items-center gap-2 text-gray-700 text-sm">
+                <CreditCard className="text-green-600" size={16} />
+                Online Payment
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 text-gray-700 text-sm">
+              <MapPin className="text-green-600" size={16} />
+              <span className="truncate">{order.address.fullAddress}</span>
+            </div>
+
+            {order.assignedDeliveryBoy && (
+              <>
+                <div
+                  className="mt-4 bg-blue-50 border
+                  border-blue-200 rounded-xl flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3 text-sm p-3 text-gray-700">
+                    <UserCheck className="text-blue-600" size={18} />
+                    <div className="font-semibold text-gray-800">
+                      <p className="">
+                        Assigned To: {order.assignedDeliveryBoy.name}
+                      </p>
+                      <p className="text-xs text-gray-600 flex">
+                        <Phone size={15} className="mt-1" />
+                        <span className="mt-1">
+                          +91 {order.assignedDeliveryBoy.mobile}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                  <a
+                    href={`tel:${order.assignedDeliveryBoy.mobile}`}
+                    className="bg-blue-600
+                      text-white text-xs px-3 py-1.5 mx-3 rounded-lg hover:bg-blue-700 transition"
+                  >
+                    Call?
+                  </a>
+                </div>
+                <button
+                  className="w-full flex items-center justify-center gap-2 bg-green-600 text-white font-semibold px-4 py-2 rounded-xl shadow hover:bg-green-700 transition"
+                  onClick={() => router.push(`/user/track-order/${order._id}`)}
+                >
+                  <Truck /> Track Your Order
+                </button>
+              </>
+            )}
+          </div>
+        )}
 
         <div className="border-t border-gray-200 pt-3 w-full">
           <button

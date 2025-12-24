@@ -1,23 +1,46 @@
 import connectDB from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 
-function extractSuggestions(raw: string): string[] {
+function extractSuggestions(text: string): string[] {
   try {
-    // Remove markdown ```json ``` wrappers
-    const cleaned = raw
-      .replace(/```json/g, "")
+    if (!text || typeof text !== "string") return [];
+
+    // Remove markdown
+    const cleaned = text
+      .replace(/```json/gi, "")
       .replace(/```/g, "")
       .trim();
 
-    const parsed = JSON.parse(cleaned);
+    // 1️⃣ Try parsing full JSON
+    try {
+      const parsed = JSON.parse(cleaned);
 
-    if (Array.isArray(parsed)) {
-      return parsed.map((s) => String(s));
+      // ✅ Case: array
+      if (Array.isArray(parsed)) return parsed;
+
+      // ✅ Case: object with message
+      if (parsed?.message && typeof parsed.message === "string") {
+        return [parsed.message];
+      }
+    } catch {
+      // ignore, try regex fallback
+    }
+
+    // 2️⃣ Fallback: extract array inside text
+    const match = cleaned.match(/\[[\s\S]*?\]/);
+    if (match) {
+      const parsed = JSON.parse(match[0]);
+      return Array.isArray(parsed) ? parsed : [];
+    }
+
+    // 3️⃣ Final fallback: plain text → single suggestion
+    if (cleaned.length > 0) {
+      return [cleaned];
     }
 
     return [];
-  } catch (err) {
-    console.error("Suggestion parse error:", err);
+  } catch (error) {
+    console.error("Suggestion parse error:", error);
     return [];
   }
 }

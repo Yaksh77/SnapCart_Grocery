@@ -32,33 +32,6 @@ function DeliveryBoyDashboard() {
   });
   const { userData } = useSelector((state: RootState) => state.user);
 
-  const fetchAssignments = async () => {
-    try {
-      const response = await axios.get("/api/delivery/get-assignments");
-      setAssingments(response.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const handleAccept = async (assignmentId: string) => {
-    try {
-      const response = await axios.get(
-        `/api/delivery/assignment/${assignmentId}/accept-assignment`
-      );
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect((): any => {
-    const socket = getSocket();
-    socket.on("new-delivery-assignment", (populatedAssignment) => {
-      setAssingments((prev) => [populatedAssignment, ...(prev || [])]);
-    });
-    return () => socket.off("new-delivery-assignment");
-  }, []);
-
   const fetchCurrentOrder = async () => {
     try {
       const response = await axios.get("/api/delivery/current-order");
@@ -73,6 +46,34 @@ function DeliveryBoyDashboard() {
       console.log(error);
     }
   };
+
+  const fetchAssignments = async () => {
+    try {
+      const response = await axios.get("/api/delivery/get-assignments");
+      setAssingments(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleAccept = async (assignmentId: string) => {
+    try {
+      const response = await axios.get(
+        `/api/delivery/assignment/${assignmentId}/accept-assignment`
+      );
+      fetchCurrentOrder();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect((): any => {
+    const socket = getSocket();
+    socket.on("new-delivery-assignment", (populatedAssignment) => {
+      setAssingments((prev) => [populatedAssignment, ...(prev || [])]);
+    });
+    return () => socket.off("new-delivery-assignment");
+  }, []);
 
   useEffect(() => {
     fetchAssignments();
@@ -174,6 +175,7 @@ function DeliveryBoyDashboard() {
             orderId={activeOrder.order._id}
             deliveryBoyId={userData?._id!}
           />
+
           <div className="mt-6 bg-white rounded-xl border shadow p-6">
             {!activeOrder.order.deliveryOtpVeryfication && !showOtpBox && (
               <button
@@ -181,9 +183,9 @@ function DeliveryBoyDashboard() {
                 onClick={sendOtp}
               >
                 {sendOtpLoading ? (
-                  <Loader size={16} className="animate-spin" />
+                  <Loader size={16} className="animate-spin text-center" />
                 ) : (
-                  "Send Otp"
+                  "Mark As Delivered"
                 )}
               </button>
             )}
@@ -202,7 +204,7 @@ function DeliveryBoyDashboard() {
                   onClick={verifyOtp}
                 >
                   {verifyOtpLoading ? (
-                    <Loader size={16} className="animate-spin" />
+                    <Loader size={16} className="animate-spin text-center" />
                   ) : (
                     "Verify OTP"
                   )}

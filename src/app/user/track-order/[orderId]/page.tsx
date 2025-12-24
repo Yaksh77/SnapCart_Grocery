@@ -67,7 +67,7 @@ function TrackOrder({ params }: { params: { orderId: string } }) {
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState<IMessage[]>([]);
   const chatBoxRef = React.useRef<HTMLDivElement>(null);
-  const [suggestedMessages, setSuggestedMessages] = useState([]);
+  const [suggestedMessages, setSuggestedMessages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -159,24 +159,48 @@ function TrackOrder({ params }: { params: { orderId: string } }) {
     });
   }, [messages]);
 
+  const normalizeSuggestions = (data: any): string[] => {
+    if (!Array.isArray(data)) return [];
+
+    return data
+      .filter((s) => typeof s === "string")
+      .map((s) =>
+        s
+          .replace(/```json/gi, "")
+          .replace(/```/g, "")
+          .replace(/[\[\]]/g, "")
+          .trim()
+      )
+      .filter(Boolean);
+  };
+
   const getSuggestedMessages = async () => {
     setLoading(true);
+
     try {
-      const lastMessage = [...messages]
+      const lastMessage = [...(messages || [])]
         .reverse()
         .find((m) => m.senderId !== userData?._id);
 
-      if (!lastMessage) return;
+      if (!lastMessage) {
+        setLoading(false);
+        return;
+      }
 
       const response = await axios.post(`/api/chat/ai-suggestions`, {
-        message: lastMessage,
-        role: "user",
+        message: lastMessage.text,
+        role: "deliveryBoy",
       });
 
-      setLoading(false);
-      setSuggestedMessages(response.data.suggestions);
+      console.log(response.data);
+
+      const suggestions = normalizeSuggestions(response.data?.suggestions);
+
+      setSuggestedMessages(suggestions);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 

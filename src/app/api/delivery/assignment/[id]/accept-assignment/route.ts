@@ -1,5 +1,6 @@
 import authOptions from "@/lib/auth";
 import connectDB from "@/lib/db";
+import emitEventHandler from "@/lib/emitEventHandler";
 import DeliveryAssignment from "@/models/deliveryAssignment.model";
 import Order from "@/models/order.model";
 import { getServerSession } from "next-auth";
@@ -62,6 +63,13 @@ export async function GET(
 
     order.assignedDeliveryBoy = deliveryBoyId;
     await order.save();
+
+    await order.populate("assignedDeliveryBoy");
+
+    await emitEventHandler("order-assigned", {
+      orderId: order._id,
+      assignedDeliveryBoy: order.assignedDeliveryBoy,
+    });
 
     await DeliveryAssignment.updateMany(
       {
