@@ -6,18 +6,17 @@ import { IUser } from "@/models/user.model";
 import { RootState } from "@/redux/store";
 import axios from "axios";
 import { ArrowLeft, Loader, Send, Sparkle } from "lucide-react";
-import mongoose from "mongoose";
 import { AnimatePresence, motion } from "motion/react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
 interface IOrder {
-  _id?: mongoose.Types.ObjectId;
-  user: mongoose.Types.ObjectId;
+  _id?: string;
+  user: string;
   items: [
     {
-      grocery: mongoose.Types.ObjectId;
+      grocery: string;
       name: string;
       category: string;
       price: string;
@@ -40,7 +39,7 @@ interface IOrder {
   };
   status: "pending" | "out of delivery" | "delivered";
   assignedDeliveryBoy?: IUser;
-  assignment?: mongoose.Types.ObjectId;
+  assignment?: string;
   isPaid?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
@@ -180,7 +179,7 @@ function TrackOrder({ params }: { params: { orderId: string } }) {
     try {
       const lastMessage = [...(messages || [])]
         .reverse()
-        .find((m) => m.senderId !== userData?._id);
+        .find((m) => m.senderId.toString() !== userData?._id);
 
       if (!lastMessage) {
         setLoading(false);
@@ -277,14 +276,14 @@ function TrackOrder({ params }: { params: { orderId: string } }) {
                     transition={{ duration: 0.2 }}
                     exit={{ opacity: 0 }}
                     className={`flex ${
-                      message.senderId === userData?._id
+                      message.senderId.toString() === userData?._id
                         ? "justify-end"
                         : "justify-start"
                     } gap-2`}
                   >
                     <div
                       className={`px-4 py-2 max-w-[75%] rounded-2xl shadow ${
-                        message.senderId === userData?._id
+                        message.senderId.toString() === userData?._id
                           ? "bg-green-600 text-white rounded-br-none"
                           : "bg-gray-100 text-gray-800 rounded-bl-none"
                       }`}

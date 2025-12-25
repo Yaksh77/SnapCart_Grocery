@@ -4,16 +4,15 @@ import { getSocket } from "@/lib/socket";
 import { IUser } from "@/models/user.model";
 import axios from "axios";
 import { ArrowLeft } from "lucide-react";
-import mongoose from "mongoose";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 interface IOrder {
-  _id?: mongoose.Types.ObjectId;
-  user: mongoose.Types.ObjectId;
+  _id?: string;
+  user: string;
   items: [
     {
-      grocery: mongoose.Types.ObjectId;
+      grocery: string;
       name: string;
       category: string;
       price: string;
@@ -36,7 +35,7 @@ interface IOrder {
   };
   status: "pending" | "out of delivery" | "delivered";
   assignedDeliveryBoy?: IUser;
-  assignment?: mongoose.Types.ObjectId;
+  assignment?: string;
   isPaid?: boolean;
   createdAt?: Date;
   updatedAt?: Date;

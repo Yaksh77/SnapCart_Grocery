@@ -226,7 +226,7 @@ function DeliveryBoyDashboard({ earnings }: { earnings: number }) {
           </div>
           <DeliveryChat
             orderId={activeOrder.order._id}
-            deliveryBoyId={userData?._id!}
+            deliveryBoyId={userData?._id?.toString()!}
           />
 
           <div className="mt-6 bg-white rounded-xl border shadow p-6">

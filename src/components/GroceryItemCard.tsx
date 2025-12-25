@@ -6,14 +6,14 @@ import {
 } from "@/redux/cartSlice";
 import { AppDispatch, RootState } from "@/redux/store";
 import { Minus, Plus, ShoppingCart } from "lucide-react";
-import mongoose from "mongoose";
+
 import { motion } from "motion/react";
 import Image from "next/image";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 interface IGrocery {
-  _id: mongoose.Types.ObjectId;
+  _id: string;
   name: string;
   category: string;
   price: string;

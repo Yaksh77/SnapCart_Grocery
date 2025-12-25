@@ -7,8 +7,8 @@ import { AnimatePresence, motion } from "motion/react";
 import React, { useEffect, useState } from "react";
 
 type props = {
-  orderId: mongoose.Types.ObjectId;
-  deliveryBoyId: mongoose.Types.ObjectId;
+  orderId: string;
+  deliveryBoyId: string;
 };
 
 function DeliveryChat({ orderId, deliveryBoyId }: props) {
@@ -22,7 +22,7 @@ function DeliveryChat({ orderId, deliveryBoyId }: props) {
     const socket = getSocket();
     socket.emit("join-room", orderId.toString());
     socket.on("receive-message", (message: IMessage) => {
-      if (message.roomId === orderId) {
+      if (message.roomId.toString() === orderId) {
         setMessages((prevMessages) => [...prevMessages!, message]);
       }
     });
@@ -91,7 +91,7 @@ function DeliveryChat({ orderId, deliveryBoyId }: props) {
     try {
       const lastMessage = [...(messages || [])]
         .reverse()
-        .find((m) => m.senderId !== deliveryBoyId);
+        .find((m) => m.senderId.toString() !== deliveryBoyId);
 
       if (!lastMessage) {
         setLoading(false);
@@ -157,14 +157,14 @@ function DeliveryChat({ orderId, deliveryBoyId }: props) {
               transition={{ duration: 0.2 }}
               exit={{ opacity: 0 }}
               className={`flex ${
-                message.senderId === deliveryBoyId
+                message.senderId.toString() === deliveryBoyId
                   ? "justify-end"
                   : "justify-start"
               } gap-2`}
             >
               <div
                 className={`px-4 py-2 max-w-[75%] rounded-2xl shadow ${
-                  message.senderId === deliveryBoyId
+                  message.senderId.toString() === deliveryBoyId
                     ? "bg-green-600 text-white rounded-br-none"
                     : "bg-gray-100 text-gray-800 rounded-bl-none"
                 }`}
