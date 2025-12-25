@@ -16,6 +16,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { signOut } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useSelector } from "react-redux";
@@ -37,6 +38,8 @@ function Navbar({ user }: { user: IUser }) {
   const [searchBarOpen, setSearchBarOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const { cartData } = useSelector((state: RootState) => state.cart);
+  const [search, setSearch] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -134,6 +137,17 @@ function Navbar({ user }: { user: IUser }) {
       )
     : null;
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const query = search.trim();
+    if (!query) {
+      return router.push("/");
+    }
+    router.push(`/?search=${encodeURIComponent(query)}`);
+    setSearch("");
+    setSearchBarOpen(false);
+  };
+
   return (
     <div className="w-[95%] fixed top-4 left-1/2 -translate-x-1/2 bg-linear-to-r from-green-500 to-green-700 rounded-2xl shadow-lg shadow-black/30 flex justify-between items-center h-20 px-4 md:px-8 z-50">
       <Link
@@ -144,12 +158,17 @@ function Navbar({ user }: { user: IUser }) {
       </Link>
 
       {user.role == "user" && (
-        <form className="hidden md:flex items-center bg-white rounded-full px-4 py-2 w-1/2 max-w-lg shadow-md">
+        <form
+          className="hidden md:flex items-center bg-white rounded-full px-4 py-2 w-1/2 max-w-lg shadow-md"
+          onSubmit={handleSearch}
+        >
           <Search className="text-gray-500 w-5 h-5 mr-2" />
           <input
             type="text"
             placeholder="Search groceries..."
             className="w-full outline-none text-gray-700 placeholder-gray-400"
+            onChange={(e) => setSearch(e.target.value)}
+            value={search}
           />
         </form>
       )}
@@ -292,11 +311,13 @@ function Navbar({ user }: { user: IUser }) {
                 className="fixed top-24 left-1/2 -translate-x-1/2 w-[95%] bg-white rounded-full shadow-md z-40 flex items-center px-4 py-2"
               >
                 <Search className="text-gray-500 w-5 h-5 mr-2" />
-                <form className="grow">
+                <form className="grow" onSubmit={handleSearch}>
                   <input
                     type="text"
                     className="w-full outline-none text-gray-700"
                     placeholder="Search groceries..."
+                    onChange={(e) => setSearch(e.target.value)}
+                    value={search}
                   />
                 </form>
                 <button

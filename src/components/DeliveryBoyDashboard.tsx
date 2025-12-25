@@ -8,13 +8,23 @@ import LiveMap from "./LiveMap";
 import DeliveryChat from "./DeliveryChat";
 import { Loader } from "lucide-react";
 import { a } from "motion/react-m";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 interface ILocation {
   latitude: number;
   longitude: number;
 }
 
-function DeliveryBoyDashboard() {
+function DeliveryBoyDashboard({ earnings }: { earnings: number }) {
   const [assignments, setAssingments] = useState<any[]>();
   const [activeOrder, setActiveOrder] = useState<any>(null);
   const [showOtpBox, setShowOtpBox] = useState(false);
@@ -129,7 +139,6 @@ function DeliveryBoyDashboard() {
       let response = await axios.post("/api/delivery/otp/send", {
         orderId: activeOrder.order._id,
       });
-      console.log(response.data);
       setShowOtpBox(true);
     } catch (error) {
       setSendOtpLoading(false);
@@ -144,7 +153,6 @@ function DeliveryBoyDashboard() {
         orderId: activeOrder.order._id,
         otp,
       });
-      console.log(response.data);
       setActiveOrder(null);
       setShowOtpBox(false);
       setVerifyOtpLoading(false);
@@ -154,6 +162,48 @@ function DeliveryBoyDashboard() {
       setVerifyOtpLoading(false);
     }
   };
+
+  if (!activeOrder && assignments?.length === 0) {
+    const todayEarning = [
+      { name: "Today", earnings, deliveries: earnings / 40 },
+    ];
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-linear-to-br from-white to-green-50 p-6">
+        <div className="max-w-md w-full text-center">
+          <h2 className="text-2xl font-bold text-gray-800">
+            No Active Deliveries
+          </h2>
+          <p className="text-gray-500 mb-5">Stay tuned for new deliveries</p>
+
+          <div className="bg-white border rounded-xl shadow-xl p-6">
+            <h2 className="font-medium text-green-700 mb-2">
+              Today's Earnings
+            </h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={todayEarning}>
+                <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="earnings" name="Earnings" />
+                <Bar dataKey="deliveries" name="Deliveries" />
+              </BarChart>
+            </ResponsiveContainer>
+            <p className="mt-4 text-lg font-bold text-green-700">
+              {earnings || 0} Earned today
+            </p>
+            <button
+              className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg"
+              onClick={() => window.location.reload()}
+            >
+              Refresh Earnings
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (activeOrder && userLocation) {
     return (

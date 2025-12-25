@@ -42,12 +42,15 @@ function page() {
   const [backendImage, setBackendImage] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [filtered, setFiltered] = useState<IGrocery[]>([]);
 
   useEffect(() => {
     const getGroceries = async () => {
       try {
         const response = await axios.get("/api/admin/get-groceries");
         setGroceries(response.data);
+        setFiltered(response.data);
       } catch (error) {
         console.log(error);
       }
@@ -110,6 +113,20 @@ function page() {
     }
   };
 
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = search.toLowerCase();
+
+    setFiltered(
+      groceries.filter((grocery) => {
+        return (
+          grocery.name.toLowerCase().includes(q) ||
+          grocery.category.toLowerCase().includes(q)
+        );
+      })
+    );
+  };
+
   return (
     <div className="pt-4 w-[95%] md:w-[85%] mx-auto pb-20">
       <motion.div
@@ -135,17 +152,20 @@ function page() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
         className="flex items-center bg-white border border-gray-200 border-border-glass rounded-full px-5 py-3 shadow-sm mb-10 hover:shadow-lg transition-all max-w-lg mx-auto w-full"
+        onSubmit={handleSearch}
       >
         <Search className="text-gray-500 w-5 h-5 mr-2" />
         <input
           type="text"
           className="w-full outline-none text-gray-700 placeholder-gray-400"
           placeholder="Search by name or category"
+          onChange={(e) => setSearch(e.target.value)}
+          value={search}
         />
       </motion.form>
 
       <div className="space-y-4">
-        {groceries.map((grocery, index) => (
+        {filtered.map((grocery, index) => (
           <motion.div
             key={index}
             whileHover={{ scale: 1.01 }}
