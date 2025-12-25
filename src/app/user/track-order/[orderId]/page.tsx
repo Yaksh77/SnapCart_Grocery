@@ -233,7 +233,7 @@ function TrackOrder({ params }: { params: { orderId: string } }) {
             />
           </div>
 
-          <div className="bg-white rounded-3xl shadow-lg border p-4 h-107.5 flex flex-col">
+          <div className="bg-white rounded-3xl shadow-lg border p-4 h-107.5 flex flex-col mt-5">
             <div className="flex justify-between items-center mb-3">
               <span className="font-semibold text-gray-700 text-sm">
                 Quick Replies

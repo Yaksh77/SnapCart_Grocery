@@ -69,9 +69,20 @@ const cartSlice = createSlice({
       state.deliveryFee = state.subTotal > 100 ? 0 : 40;
       state.finalTotal = state.subTotal + state.deliveryFee;
     },
+    clearCart: (state) => {
+      state.cartData = [];
+      state.subTotal = 0;
+      state.deliveryFee = 40;
+      state.finalTotal = 40;
+    },
   },
 });
 
-export const { addToCart, increaseQuantity, decreaseQuantity, removeFromCart } =
-  cartSlice.actions;
+export const {
+  addToCart,
+  increaseQuantity,
+  decreaseQuantity,
+  removeFromCart,
+  clearCart,
+} = cartSlice.actions;
 export default cartSlice.reducer;

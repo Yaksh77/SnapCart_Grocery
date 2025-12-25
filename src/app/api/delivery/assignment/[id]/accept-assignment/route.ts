@@ -8,11 +8,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
-    const { id } = await params;
+    const { id } = await context.params;
     const session = await getServerSession(authOptions);
     const deliveryBoyId = session?.user.id;
     if (!deliveryBoyId) {

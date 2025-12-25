@@ -1,5 +1,5 @@
 "use client";
-import { RootState } from "@/redux/store";
+import { AppDispatch, RootState } from "@/redux/store";
 import {
   ArrowLeft,
   Building,
@@ -18,11 +18,12 @@ import {
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 import { useMap } from "react-leaflet";
 import axios from "axios";
+import { clearCart } from "@/redux/cartSlice";
 
 const MapContainer = dynamic(
   () => import("react-leaflet").then((m) => m.MapContainer),
@@ -78,6 +79,7 @@ function Checkout() {
   const { subTotal, deliveryFee, finalTotal } = useSelector(
     (state: RootState) => state.cart
   );
+  const dispatch = useDispatch<AppDispatch>();
   const [address, setAddress] = useState({
     fullName: "",
     mobile: "",
@@ -226,8 +228,7 @@ function Checkout() {
         },
         paymentMethod,
       });
-
-      console.log(response.data);
+      dispatch(clearCart());
       router.push("/user/order-success");
     } catch (error) {
       console.log(error);
@@ -259,6 +260,7 @@ function Checkout() {
         paymentMethod,
       });
 
+      dispatch(clearCart());
       window.location.href = response.data.url;
     } catch (error) {
       console.log(error);

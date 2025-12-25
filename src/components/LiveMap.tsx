@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect } from "react";
 import L, { icon, LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";

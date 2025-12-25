@@ -4,10 +4,13 @@ import { RootState } from "@/redux/store";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import LiveMap from "./LiveMap";
 import DeliveryChat from "./DeliveryChat";
 import { Loader } from "lucide-react";
-import { a } from "motion/react-m";
+import dynamic from "next/dynamic";
+const LiveMap = dynamic(() => import("./LiveMap"), {
+  ssr: false,
+});
+
 import {
   Bar,
   BarChart,
