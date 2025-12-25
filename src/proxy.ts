@@ -1,6 +1,7 @@
-import { getToken } from "next-auth/jwt";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import authOptions from "./lib/auth";
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -14,17 +15,15 @@ export async function proxy(req: NextRequest) {
   if (publicRoutes.some((path) => pathname.startsWith(path))) {
     return NextResponse.next();
   }
+  const session = await getServerSession(authOptions);
 
-  const token = await getToken({ req, secret: process.env.AUTH_SECRET });
-  console.log(token);
-
-  if (!token) {
+  if (!session) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("callbackUrl", req.url);
     return NextResponse.redirect(loginUrl);
   }
 
-  const role = token.role;
+  const role = session.user.role;
   if (pathname.startsWith("/user") && role !== "user") {
     return NextResponse.redirect(new URL("/unauthorized", req.url));
   }
